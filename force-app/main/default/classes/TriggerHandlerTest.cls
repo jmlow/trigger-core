@@ -16,13 +16,13 @@ private class TriggerHandlerTest {
 		th.doBeforeDelete();
 		th.doAfterDelete();
 		th.doAfterUndelete();
-		th.getTriggerNew();
-		th.setTriggerNew(null);
-		th.getTriggerOld();
-		th.setTriggerOld(null);
-		th.getNewMap();
-		th.setNewMap(null);
-		th.getOldMap();
-		th.setOldMap(null);
+		th.getSObjTriggerNew();
+		th.setSObjTriggerNew(null);
+		th.getSObjTriggerOld();
+		th.setSObjTriggerOld(null);
+		th.getSObjNewMap();
+		th.setSObjNewMap(null);
+		th.getSObjOldMap();
+		th.setSObjOldMap(null);
 	}
 }
