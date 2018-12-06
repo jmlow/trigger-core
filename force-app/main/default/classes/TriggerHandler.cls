@@ -27,10 +27,10 @@ public virtual without sharing class TriggerHandler {
 	}
 	/**
 	 * @description Constructor for injecting trigger variables -- useful
-	 * for tests and such    
+	 * for tests and such
 	 */
 	public TriggerHandler(List<SObject> triggerNew, List<SObject> triggerOld,
-			Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {
+		Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {
 		this.sObjTriggerNew = triggerNew;
 		this.sObjTriggerOld = triggerOld;
 		this.sObjNewMap = newMap;

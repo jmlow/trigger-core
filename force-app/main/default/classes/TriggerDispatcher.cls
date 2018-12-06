@@ -65,21 +65,21 @@ public with sharing class TriggerDispatcher {
 		if (!handler.isTriggerActive()) return;
 		if (isBefore) {
 			if (isInsert) {
-					handler.doBeforeInsert();
+				handler.doBeforeInsert();
 			} else if (isUpdate) {
-					handler.doBeforeUpdate();
+				handler.doBeforeUpdate();
 			} else if (isDelete) {
-					handler.doBeforeDelete();
+				handler.doBeforeDelete();
 			}
 		} else if (isAfter) {
 			if (isInsert) {
-					handler.doAfterInsert();
+				handler.doAfterInsert();
 			} else if (isUpdate) {
-					handler.doAfterUpdate();
+				handler.doAfterUpdate();
 			} else if (isDelete) {
-					handler.doAfterDelete();
+				handler.doAfterDelete();
 			} else if (isUndelete) {
-					handler.doAfterUndelete();
+				handler.doAfterUndelete();
 			}
 		}
 	}
