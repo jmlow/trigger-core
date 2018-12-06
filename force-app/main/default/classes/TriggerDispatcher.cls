@@ -64,23 +64,23 @@ public with sharing class TriggerDispatcher {
 		// note that the trigger will always be active unless a child class overrides functionality
 		if (!handler.isTriggerActive()) return;
 		if (isBefore) {
-            if (isInsert) {
-                handler.doBeforeInsert();
-            } else if (isUpdate) {
-                handler.doBeforeUpdate();
-            } else if (isDelete) {
-                handler.doBeforeDelete();
-            }
-        } else if (isAfter) {
-            if (isInsert) {
-                handler.doAfterInsert();
-            } else if (isUpdate) {
-                handler.doAfterUpdate();
-            } else if (isDelete) {
-                handler.doAfterDelete();
-            } else if (isUndelete) {
-                handler.doAfterUndelete();
-            }
+			if (isInsert) {
+					handler.doBeforeInsert();
+			} else if (isUpdate) {
+					handler.doBeforeUpdate();
+			} else if (isDelete) {
+					handler.doBeforeDelete();
+			}
+		} else if (isAfter) {
+			if (isInsert) {
+					handler.doAfterInsert();
+			} else if (isUpdate) {
+					handler.doAfterUpdate();
+			} else if (isDelete) {
+					handler.doAfterDelete();
+			} else if (isUndelete) {
+					handler.doAfterUndelete();
+			}
 		}
 	}
 }
