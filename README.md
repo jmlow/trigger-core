@@ -37,9 +37,9 @@ public with sharing class TriggerDispatcher {
 	/**
 	 * @description Standard constructor which sets all trigger dispatching related
 	 * private variables
+	 * @param isExecuting whether or not called from a trigger
 	 * @param isBefore whether the current trigger context is a before trigger
 	 * @param isAfter whether the current trigger context is an after trigger
-	 * @param isExecuting whether or not called from a trigger
 	 * @param isInsert whether the current trigger context is for insert
 	 * @param isUpdate whether the current trigger context is for update
 	 * @param isDelete whether the current trigger context is for delete
@@ -48,9 +48,9 @@ public with sharing class TriggerDispatcher {
 	 * @param handler TriggerHandler (or any child class of) which executes trigger business logic
 	 */
 	public TriggerDispatcher(
+		Boolean isExecuting,
 		Boolean isBefore,
 		Boolean isAfter,
-		Boolean isExecuting,
 		Boolean isInsert,
 		Boolean isUpdate,
 		Boolean isDelete,
@@ -58,9 +58,9 @@ public with sharing class TriggerDispatcher {
 		Integer size,
 		TriggerHandler handler
 	) {
+		this.isExecuting = isExecuting;
 		this.isBefore = isBefore;
 		this.isAfter = isAfter;
-		this.isExecuting = isExecuting;
 		this.isInsert = isInsert;
 		this.isUpdate = isUpdate;
 		this.isDelete = isDelete;
@@ -214,73 +214,88 @@ With all of the above defined, we have successfully implemented all of the boile
 
 ```java
 /**
- * @author Thomas Wilkins
- * @date 12/17/2017
- * @description Example implementation of a trigger handler
+ * @author Justin Ludlow
+ * @date 12/6/2018
+ * @description Opportunity trigger handler implementation
  */
-public without sharing class AccountTriggerHandler extends TriggerHandler {
-    /**
-     * @description Standard constructor -- sets class variables
-     */
-    public AccountTriggerHandler() {
-        super();
-    }
+public with sharing class OpportunityTriggerHandler extends TriggerHandler {
+	/**
+	 * @description Typed trigger context variables
+	 */
+	@TestVisible
+	public final List<Opportunity> triggerNew, triggerOld;
+	public final Map<Id, Opportunity> newMap, oldMap;
+	/**
+	 * @description Standard constructor -- sets class variables
+	 */
+	public OpportunityTriggerHandler() {
+		super();
+		this.triggerNew = (List<Opportunity>) this.sObjTriggerNew;
+		this.triggerOld = (List<Opportunity>) this.sObjTriggerOld;
+		this.newMap = (Map<Id, Opportunity>) this.sObjNewMap;
+		this.oldMap = (Map<Id, Opportunity>) this.sObjOldMap;
+	}
 
-    // Note that we only have to override the 2 methods from the parent that we care about
-    public override void doBeforeInsert() {
-        checkMatchBillingAddress();
-    }
-
-    public override void doBeforeUpdate() {
-        checkMatchBillingAddress();
-    }
-
-    // These can be contained within the class, or in a service class
-    // if there is no need to reuse, it might makes more sense to capture everything
-    // within this handler class
-    /**
-     * @description checks if the shipping address should be the same as the billing address
-     */
-    @TestVisible
-    private void checkMatchBillingAddress() {
-        // casting can be avoided using the sObject get/put methods
-        for (Account a : (List<Account>) this.triggerNew) {
-            if (a.Match_Billing_Address__c == true && a.BillingPostalCode != null) {
-                a.ShippingPostalCode = a.BillingPostalCode;
-            }
-        }
-    }
+	public override void doBeforeUpdate() {
+		createProjectsFromOpportunities();
+	}
+	/**
+	 * @description Create Projects from Closed Won Opportunities
+	 */
+	private void createProjectsFromOpportunities() {
+		List<apollo__Project__c> newProjects = new List<apollo__Project__c>();
+		for(Opportunity newOpp : this.triggerNew) {
+			Opportunity oldOpp = this.oldMap.get(newOpp.Id);
+			if(newOpp.Project__c != null &&
+				newOpp.StageName == 'Closed Won' &&
+				newOpp.StageName != oldOpp.StageName
+			) {
+				newProjects.add(new apollo__Project__c(
+					Name = newOpp.Name,
+					Opportunity__c = newOpp.Id,
+					apollo__Account__c = newOpp.AccountId,
+					apollo__Project_Budget__c = newOpp.Amount,
+					apollo__Service_Budget__c = newOpp.Amount
+				));
+			}
+		}
+		insert newProjects;
+		for(apollo__Project__c project : newProjects) {
+			this.newMap.get(project.Opportunity__c).Project__c = project.Id;
+		}
+	}
 }
 ```
 
-This child class leans on the parent constructor for initialization, and only overrides the key trigger cases which are pertinent to the business logic of the Account object. In this instance, the business logic methods are private methods within the class. While it makes sense to encapsulate business logic, if the necessity to reuse business logic in other applications arises, then it can be moved out into a service class.
+This child class leans on the parent constructor for initialization, and only overrides the key trigger cases which are pertinent to the business logic of the Opportunity sObject. In this instance, the business logic methods are private methods within the class. While it makes sense to encapsulate business logic, if the necessity to reuse business logic in other applications arises, then it can be moved out into a service class.
 
 # Putting it all together
 
 The previously discussed components provide the majority of functionality for the centralized trigger dispatcher. To tie everything together, the final missing piece is hooking in all of the components in the trigger itself. The following trigger code shows an example of how the above can be utilized:
 
-```
+```java
 /**
- * @author Thomas Wilkins
- * @date 12/17/2017
- * @description Example Trigger created using the above classes.
+ * @author Justin Ludlow
+ * @date 12/6/2018
+ * @description Opportunity Trigger
  */
- trigger AccountTrigger on Account (before insert, before update, before delete,
-        after insert, after update, after delete) {
-    TriggerHandler handler = new AccountTriggerHandler();
-    TriggerDispatcher dispatcher = new TriggerDispatcher(
-        Trigger.isBefore,
-        Trigger.isAfter,
-        Trigger.isExecuting,
-        Trigger.isInsert,
-        Trigger.isUpdate,
-        Trigger.isDelete,
-        Trigger.isUndelete,
-        Trigger.size,
-        handler
-    );
-    dispatcher.dispatch();
+trigger OpportunityTrigger on Opportunity (before insert, before update, before delete,
+	after insert, after update, after delete, after undelete
+) {
+	TriggerHandler handler = new OpportunityTriggerHandler();
+	TriggerDispatcher dispatcher = new TriggerDispatcher(
+		Trigger.isExecuting,
+		Trigger.isBefore,
+		Trigger.isAfter,
+		Trigger.isInsert,
+		Trigger.isUpdate,
+		Trigger.isDelete,
+		Trigger.isUndelete,
+		Trigger.size,
+		handler
+	);
+	dispatcher.dispatch();
 }
 ```
 
-The steps to hooking everything together involve creating a new TriggerHandler, which is then passed to the TriggerDispatcher. Finally, the dispatch method if called to execute the appropriate trigger logic. At this point, adding any additional business rules for an Account sObject via trigger can be done by editing the AccountTriggerHandler class, and nothing else.
+The steps to hooking everything together involve creating a new TriggerHandler, which is then passed to the TriggerDispatcher. Finally, the dispatch method is called to execute the appropriate trigger logic. At this point, adding any additional business rules for an Opportunity sObject via trigger can be done by editing the OpportunityTriggerHandler class, and nothing else.

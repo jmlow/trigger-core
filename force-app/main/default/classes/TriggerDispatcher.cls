@@ -23,9 +23,9 @@ public with sharing class TriggerDispatcher {
 	/**
 	 * @description Standard constructor which sets all trigger dispatching related
 	 * private variables
+	 * @param isExecuting whether or not called from a trigger
 	 * @param isBefore whether the current trigger context is a before trigger
 	 * @param isAfter whether the current trigger context is an after trigger
-	 * @param isExecuting whether or not called from a trigger
 	 * @param isInsert whether the current trigger context is for insert
 	 * @param isUpdate whether the current trigger context is for update
 	 * @param isDelete whether the current trigger context is for delete
@@ -34,9 +34,9 @@ public with sharing class TriggerDispatcher {
 	 * @param handler TriggerHandler (or any child class of) which executes trigger business logic
 	 */
 	public TriggerDispatcher(
+		Boolean isExecuting,
 		Boolean isBefore,
 		Boolean isAfter,
-		Boolean isExecuting,
 		Boolean isInsert,
 		Boolean isUpdate,
 		Boolean isDelete,
@@ -44,9 +44,9 @@ public with sharing class TriggerDispatcher {
 		Integer size,
 		TriggerHandler handler
 	) {
+		this.isExecuting = isExecuting;
 		this.isBefore = isBefore;
 		this.isAfter = isAfter;
-		this.isExecuting = isExecuting;
 		this.isInsert = isInsert;
 		this.isUpdate = isUpdate;
 		this.isDelete = isDelete;

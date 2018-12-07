@@ -14,7 +14,7 @@ public virtual without sharing class TriggerHandler {
 	@TestVisible
 	protected Map<Id, SObject> sObjNewMap, sObjOldMap;
 	/**
-	 * @description Sets the the trigger variables if in a trigger context
+	 * @description Sets the trigger variables if in a trigger context
 	 */
 	public TriggerHandler() {
 		// If in a trigger context, store the trigger variable
