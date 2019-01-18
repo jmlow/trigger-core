@@ -17,7 +17,7 @@ public virtual without sharing class TriggerHandler {
 	 * @description Sets the trigger variables if in a trigger context
 	 */
 	public TriggerHandler() {
-		// If in a trigger context, store the trigger variable
+		// If in a trigger context, store the trigger variables
 		if (Trigger.isExecuting) {
 			this.sObjTriggerNew = Trigger.new;
 			this.sObjTriggerOld = Trigger.old;
