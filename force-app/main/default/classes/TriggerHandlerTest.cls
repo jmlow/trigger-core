@@ -4,7 +4,7 @@
  * @description coverage tests for the trigger handler base class
  */
 @isTest
-private class TriggerHandlerTest {
+private class TriggerHandler_Test {
 	@isTest 
 	private static void coverage() {
 		TriggerHandler th = new Triggerhandler(null, null, null, null);
@@ -16,13 +16,5 @@ private class TriggerHandlerTest {
 		th.doBeforeDelete();
 		th.doAfterDelete();
 		th.doAfterUndelete();
-		th.getSObjTriggerNew();
-		th.setSObjTriggerNew(null);
-		th.getSObjTriggerOld();
-		th.setSObjTriggerOld(null);
-		th.getSObjNewMap();
-		th.setSObjNewMap(null);
-		th.getSObjOldMap();
-		th.setSObjOldMap(null);
 	}
 }

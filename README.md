@@ -111,7 +111,7 @@ One of the key objectives of this design pattern is to minimize boilerplate code
  * @author Thomas Wilkins
  * @date 12/17/2017
  * @description Base class for all trigger handlers. Provides default functionality
- * necessary for the dispatcher, which supports focus on implementation of only 
+ * necessary for the dispatcher,which supports focus on implementation of only 
  * relevant functionality and business rules on each individual sObject
  */
 public virtual without sharing class TriggerHandler {
@@ -119,40 +119,29 @@ public virtual without sharing class TriggerHandler {
 	 * @description trigger context variables
 	 */
 	@TestVisible
-	protected List<SObject> sObjTriggerNew, sObjTriggerOld;
+	protected final List<SObject> sObjTriggerNew,sObjTriggerOld;
 	@TestVisible
-	protected Map<Id, SObject> sObjNewMap, sObjOldMap;
-	/**
-	 * @description Sets the the trigger variables if in a trigger context
-	 */
-	public TriggerHandler() {
-		// If in a trigger context, store the trigger variable
-		if (Trigger.isExecuting) {
-			this.sObjTriggerNew = Trigger.new;
-			this.sObjTriggerOld = Trigger.old;
-			this.sObjNewMap = Trigger.newMap;
-			this.sObjOldMap = Trigger.oldMap;
-		}
-	}
+	protected final Map<Id,SObject> sObjNewMap,sObjOldMap;
 	/**
 	 * @description Constructor for injecting trigger variables -- useful
-	 * for tests and such    
+	 * for tests and such
 	 */
-	public TriggerHandler(List<SObject> triggerNew, List<SObject> triggerOld,
-		Map<Id, SObject> newMap, Map<Id, SObject> oldMap) {
+	public TriggerHandler(List<SObject> triggerNew,List<SObject> triggerOld,
+		Map<Id,SObject> newMap,Map<Id,SObject> oldMap) {
 		this.sObjTriggerNew = triggerNew;
 		this.sObjTriggerOld = triggerOld;
 		this.sObjNewMap = newMap;
 		this.sObjOldMap = oldMap;
 	}
 	/**
-	 * @description whether or not the trigger is active. In this base class, it always 
+	 * @description whether or not the trigger is active. In this base class,it always 
 	 * returns true to provide base functionality for those that don't want to implement
 	 * trigger activation functionality. Child classes can override this if desired
 	 * @return whether or not the trigger is active
 	 */
 	public virtual Boolean isTriggerActive() {
-		return true;
+		Trigger_Kill_Switch__c killAllTriggers = Trigger_Kill_Switch__c.getValues('all');
+		return killAllTriggers != null ? !killAllTriggers.Disable__c : true;
 	}
 	/**
 	 * @description default do before Insert -- does nothing unless overriden by a child class
@@ -196,15 +185,6 @@ public virtual without sharing class TriggerHandler {
 	public virtual void doAfterUndelete() {
 		return;
 	}
-
-	public List<SObject> getSObjTriggerNew() { return this.sObjTriggerNew; }
-	public List<SObject> getSObjTriggerOld() { return this.sObjTriggerOld; }
-	public Map<Id, SObject> getSObjNewMap() { return this.sObjNewMap; }
-	public Map<Id, SObject> getSObjOldMap() { return this.sObjOldMap; }
-	public void setSObjTriggerNew(List<SObject> triggerNew) { this.sObjTriggerNew = triggerNew; }
-	public void setSObjTriggerOld(List<SObject> triggerOld) { this.sObjTriggerOld = triggerOld; }
-	public void setSObjNewMap(Map<Id, SObject> newMap) { this.sObjNewMap = newMap; }
-	public void setSObjOldMap(Map<Id, SObject> oldMap) { this.sObjOldMap = oldMap; }
 }
 ```
 
@@ -216,58 +196,158 @@ With all of the above defined, we have successfully implemented all of the boile
 /**
  * @author Justin Ludlow
  * @date 12/6/2018
- * @description Opportunity trigger handler implementation
+ * @description Opportunity Trigger Handler Implementation
  */
 public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 	/**
 	 * @description Typed trigger context variables
 	 */
 	@TestVisible
-	public final List<Opportunity> triggerNew, triggerOld;
-	public final Map<Id, Opportunity> newMap, oldMap;
+	private List<Opportunity> triggerNew,triggerOld;
+	private Map<Id,Opportunity> newMap,oldMap;
+
+	private void typecastContext() {
+		if(this.sObjTriggerNew != null) this.triggerNew = (List<Opportunity>) this.sObjTriggerNew;
+		if(this.sObjTriggerOld != null) this.triggerOld = (List<Opportunity>) this.sObjTriggerOld;
+		if(this.sObjNewMap != null) this.newMap = (Map<Id,Opportunity>) this.sObjNewMap;
+		if(this.sObjOldMap != null) this.oldMap = (Map<Id,Opportunity>) this.sObjOldMap;
+	}
 	/**
-	 * @description Standard constructor -- sets class variables
+	 * @description Standard constructor -- sets class variables from Trigger Context
 	 */
 	public OpportunityTriggerHandler() {
-		super();
-		this.triggerNew = (List<Opportunity>) this.sObjTriggerNew;
-		this.triggerOld = (List<Opportunity>) this.sObjTriggerOld;
-		this.newMap = (Map<Id, Opportunity>) this.sObjNewMap;
-		this.oldMap = (Map<Id, Opportunity>) this.sObjOldMap;
+		super(Trigger.new,Trigger.old,Trigger.newMap,Trigger.oldMap);
+		typecastContext();
+	}
+	/**
+	 * @description Constructor for injecting trigger variables -- useful
+	 * for tests and such
+	 */
+	public OpportunityTriggerHandler(List<SObject> triggerNew,List<SObject> triggerOld,
+		Map<Id,SObject> newMap,Map<Id,SObject> oldMap)
+	{
+		super(triggerNew,triggerOld,newMap,oldMap);
+		typecastContext();
+	}
+
+	public override Boolean isTriggerActive() {
+		Boolean allTriggersOn = super.isTriggerActive();
+		Trigger_Kill_Switch__c killOpportunityTrigger = Trigger_Kill_Switch__c.getValues('Opportunity');
+		return allTriggersOn && (killOpportunityTrigger != null ? !killOpportunityTrigger.Disable__c : true);
+	}
+
+	public override void doBeforeInsert() {
+		Set<Id> primaryOppIdsToQuery = collectPrimaryOppIdsToQuery();
+		Map<Id,Opportunity> primaryOpps = new Map<Id,Opportunity>();
+		if(!primaryOppIdsToQuery.isEmpty()) primaryOpps = queryPrimaryOpps(primaryOppIdsToQuery);
+		OpportunityToProjectService.populateProjectFromPrimaryOpp(this.triggerNew, primaryOpps);
 	}
 
 	public override void doBeforeUpdate() {
-		createProjectsFromOpportunities();
+		Set<Id> primaryOppIdsToQuery = collectPrimaryOppIdsToQuery();
+		Map<Id,Opportunity> primaryOpps = new Map<Id,Opportunity>();
+		if(!primaryOppIdsToQuery.isEmpty()) primaryOpps = queryPrimaryOpps(primaryOppIdsToQuery);
+		primaryOpps.putAll(this.newMap);
+		OpportunityToProjectService.populateProjectFromPrimaryOpp(this.triggerNew, primaryOpps);
+		List<apollo__Project__c> projectsToInsert = OpportunityToProjectService.createProjectsFromOpps(this.triggerNew,this.oldMap);
+		if(!projectsToInsert.isEmpty()) insert projectsToInsert;
+		OpportunityToProjectService.updateOppsFromProjects(this.newMap,projectsToInsert);
+	}
+
+	public override void doAfterUpdate() {
+		Set<Id> projectOppIds = collectOppIdsForProjects();
+		List<ContentDocumentLink> existingFiles = new List<ContentDocumentLink>();
+		List<OpportunityLineItem> olis = new List<OpportunityLineItem>();
+		if(!projectOppIds.isEmpty()) {
+			existingFiles = queryFilesToShare(projectOppIds);
+			olis= queryOlisForProjectTasks(projectOppIds); 
+		}
+		List<ContentDocumentLink> filesToShare = FileSharingService.shareFilesFromOppToProject(this.newMap,existingFiles);
+		if(!filesToShare.isEmpty()) insert filesToShare;
+		List<apollo__Project_Task__c> projectTasksToInsert = OpportunityToProjectService.createProjectTasksFromOlis(this.newMap,olis);
+		if(!projectTasksToInsert.isEmpty()) insert projectTasksToInsert;
+		List<OpportunityLineItem> olisToUpdate = OpportunityToProjectService.updateOlisFromProjectTasks(projectTasksToInsert);
+		if(!olisToUpdate.isEmpty()) update olisToUpdate;
 	}
 	/**
-	 * @description Create Projects from Closed Won Opportunities
+	 * @description Collects Parent Opp Ids that aren't already in the Trigger Context
 	 */
-	private void createProjectsFromOpportunities() {
-		List<apollo__Project__c> newProjects = new List<apollo__Project__c>();
+	@TestVisible
+	private Set<Id> collectPrimaryOppIdsToQuery() {
+		Set<Id> primaryOppIdsToQuery = new Set<Id>();
+		for(Opportunity opp : this.triggerNew) {
+			if(opp.Primary_Opportunity__c != null) {
+				if(this.newMap == null ||
+					!this.newMap.containsKey(opp.Primary_Opportunity__c)
+				) {
+					primaryOppIdsToQuery.add(opp.Primary_Opportunity__c);
+				}
+			}
+		}
+		return primaryOppIdsToQuery;
+	}
+	/**
+	 * @description Query Primary Opps to get Project__c
+	 */
+	@TestVisible
+	private Map<Id,Opportunity> queryPrimaryOpps(Set<Id> primaryOppIdsToQuery) {
+		Map<Id,Opportunity> primaryOpps;
+		primaryOpps = new Map<Id,Opportunity>([
+			SELECT Project__c FROM Opportunity WHERE Id IN :primaryOppIdsToQuery
+		]);
+		return primaryOpps;
+	}
+	/**
+	 * @description Collects relevant Opportunity Ids for querying child Opportunity Line Items
+	 */
+	@TestVisible
+	private Set<Id> collectOppIdsForProjects() {
+		Set<Id> oppIds = new Set<Id>();
 		for(Opportunity newOpp : this.triggerNew) {
 			Opportunity oldOpp = this.oldMap.get(newOpp.Id);
 			if(newOpp.Project__c != null &&
 				newOpp.StageName == 'Closed Won' &&
 				newOpp.StageName != oldOpp.StageName
 			) {
-				newProjects.add(new apollo__Project__c(
-					Name = newOpp.Name,
-					Opportunity__c = newOpp.Id,
-					apollo__Account__c = newOpp.AccountId,
-					apollo__Project_Budget__c = newOpp.Amount,
-					apollo__Service_Budget__c = newOpp.Amount
-				));
+				oppIds.add(newOpp.Id);
 			}
 		}
-		insert newProjects;
-		for(apollo__Project__c project : newProjects) {
-			this.newMap.get(project.Opportunity__c).Project__c = project.Id;
-		}
+		return oppIds;
+	}
+	/**
+	 * @description Query Files to share from Opp to Project
+	 */
+	@TestVisible
+	private List<ContentDocumentLink> queryFilesToShare(Set<Id> oppIds) {
+		List<ContentDocumentLink> existingFiles = new List<ContentDocumentLink>();
+		existingFiles = [
+			SELECT ContentDocumentId,
+				LinkedEntityId
+			FROM ContentDocumentLink
+			WHERE LinkedEntityId IN :oppIds
+		];
+		return existingFiles;
+	}
+	/**
+	 * @description Query Olis to create Project Tasks
+	 */
+	@TestVisible
+	private List<OpportunityLineItem> queryOlisForProjectTasks(Set<Id> oppIds) {
+		List<OpportunityLineItem> olisForProjectTasks;
+		olisForProjectTasks = [
+			SELECT OpportunityId,
+				Product2.Name,
+				Quantity,
+				Description
+			FROM OpportunityLineItem
+			WHERE OpportunityId IN :oppIds
+		];
+		return olisForProjectTasks;
 	}
 }
 ```
 
-This child class leans on the parent constructor for initialization, and only overrides the key trigger cases which are pertinent to the business logic of the Opportunity sObject. In this instance, the business logic methods are private methods within the class. While it makes sense to encapsulate business logic, if the necessity to reuse business logic in other applications arises, then it can be moved out into a service class.
+This child class leans on the parent constructor for initialization, and only overrides the key trigger cases which are pertinent to the business logic of the Opportunity sObject. Where appropriate, the business logic methods are private methods within the class. While it makes sense to encapsulate business logic, if the necessity to reuse business logic in other applications arises, then it should be moved out into a service class.
 
 # Putting it all together
 
