@@ -4,8 +4,8 @@
  * @description coverage tests for the trigger dispatcher
  */
 @isTest
-private class TriggerDispatcherTest {
-	private static TriggerHandler th = new TriggerHandler();
+private class TriggerDispatcher_Test {
+	private static TriggerHandler th = new TriggerHandler(null,null,null,null);
 
 	@isTest private static void coverage_beforeInsert() {
 		TriggerDispatcher dispatcher = new TriggerDispatcher(true, true, false, true, false, false, false, 1, th);
