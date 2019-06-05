@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>List</customSettingsType>
+    <description>A list of Trigger Kill Switches for turning Triggers on/off. This is done as a Custom Setting (rather than a Custom Metadata Type) to isolate tests from the live environment.</description>
+    <enableFeeds>false</enableFeeds>
+    <label>Trigger Kill Switch</label>
+    <visibility>Public</visibility>
+</CustomObject>
