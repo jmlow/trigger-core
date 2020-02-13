@@ -1,7 +1,5 @@
 {
-    "orgName": "jludlow Company",
-    "edition": "Developer",
-    "orgPreferences" : {
-        "enabled": ["S1DesktopEnabled"]
-    }
+	"orgName": "jludlow company",
+	"edition": "Developer",
+	"features": []
 }
