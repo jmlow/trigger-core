@@ -1,5 +1,10 @@
 {
-	"orgName": "jludlow company",
-	"edition": "Developer",
-	"features": []
+  "orgName": "jludlow Company",
+  "edition": "Developer",
+  "features": [],
+  "settings": {
+    "orgPreferenceSettings": {
+      "s1DesktopEnabled": true
+    }
+  }
 }
