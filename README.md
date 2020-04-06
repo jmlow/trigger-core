@@ -1,3 +1,5 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/jmlow/trigger-core) 
+
 # Trigger Core Architecture
 One of the key challenges that software developers face is writing clean, reusable, DRY (Don't Repeat Yourself) code in a way that is maintainable and extensible. As such, a significant amount of effort is focused on developing design patterns around those objectives. One such pattern is the centralized trigger dispatcher.
 
