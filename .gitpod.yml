@@ -1,6 +1,21 @@
-tasks:
-  - init: echo "Replace me with a build script for the project."
-    command: echo "Replace me with something that should run on every start, or just
-      remove me entirely."
 image:
   file: .gitpod.Dockerfile
+tasks:
+  - init: ~/wkspc/init.sh
+    command: ~/wkspc/command.sh
+vscode:
+  extensions:
+    - Angular.ng-template@0.901.0:YBOQRthNnMUfqpVxM7goXg==
+    - dbaeumer.vscode-eslint@2.1.2:SXv8jWBXOP4PJ/PAw0CBzg==
+    - esbenp.prettier-vscode@4.1.1:PgVOq0TZoijwxC5s24XFSA==
+    - octref.vetur@0.24.0:wQwUWmMBrV2Y+ZN1GPaapg==
+    - salesforce.salesforcedx-vscode@48.8.0:mgUCLr8fnWOu30Y9ooZsWg==
+    - salesforce.salesforcedx-vscode-apex@48.8.0:cqMQ0UeDZRT7l0dl7JXv9Q==
+    - salesforce.salesforcedx-vscode-apex-debugger@48.8.0:akgRnwHAzImjmGgSH5pxVA==
+    - salesforce.salesforcedx-vscode-apex-replay-debugger@48.8.0:tFQKkP8zyk5WwckH2w+GNQ==
+    - salesforce.salesforcedx-vscode-core@48.8.0:YXQTeJzpvlgvhiEJHuqYRQ==
+    - salesforce.salesforcedx-vscode-lightning@48.8.0:L/BB0x00nfJqTcN7rArgvQ==
+    - salesforce.salesforcedx-vscode-lwc@48.8.0:dJ0luHcHENOvN33DjouZhg==
+    - salesforce.salesforcedx-vscode-visualforce@48.8.0:Pk8o5UnJN2nRnau+ZnoZtQ==
+    - vscode-icons-team.vscode-icons@10.0.0:9G2nNF/k04qaOhAogmEuMg==
+    - vscodevim.vim@1.13.1:SI3AUi8tRZQWIfdXgXHbOQ==
