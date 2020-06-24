@@ -1,0 +1,21 @@
+{
+    "workbench.colorTheme": "Monokai",
+    "workbench.iconTheme": "vscode-icons",
+    "editor.acceptSuggestionOnEnter": "off",
+    "editor.acceptSuggestionOnCommitCharacter": true,
+    "editor.autoClosingBrackets": "always",
+    "editor.autoClosingQuotes": "beforeWhitespace",
+    "editor.autoIndent": "full",
+    "editor.codeLens": true,
+    "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Hack', 'DejaVu Sans Mono', 'monospace'",
+    "editor.fontLigatures": true,
+    "editor.renderFinalNewline": true,
+    "editor.renderIndentGuides": true,
+    "editor.renderLineHighlight": "all",
+    "editor.renderWhitespace": "all",
+    "editor.minimap.enabled": true,
+    "editor.minimap.renderCharacters": true,
+    "editor.minimap.showSlider": "always",
+    "editor.minimap.side": "left",
+    "terminal.integrated.fontFamily": "'JetBrains Mono', 'Fira Code', 'Hack', 'DejaVu Sans Mono', 'monospace', 'PowerlineSymbols'"
+}
