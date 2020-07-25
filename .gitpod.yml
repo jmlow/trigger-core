@@ -3,6 +3,12 @@ image:
 tasks:
   - init: ~/wkspc/init.sh
     command: ~/wkspc/command.sh
+github:
+  prebuilds:
+    addBadge: true
+    addCheck: false
+    addComment: true
+    addLabel: false
 vscode:
   extensions:
     - Angular.ng-template@0.901.0:YBOQRthNnMUfqpVxM7goXg==
