@@ -220,8 +220,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 	 * @description Standard constructor -- sets class variables from Trigger Context
 	 */
 	public OpportunityTriggerHandler() {
-		super(Trigger.new,Trigger.old,Trigger.newMap,Trigger.oldMap);
-		typecastContext();
+		this(Trigger.new,Trigger.old,Trigger.newMap,Trigger.oldMap);
 	}
 	/**
 	 * @description Constructor for injecting trigger variables -- useful
